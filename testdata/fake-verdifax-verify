@@ -1,0 +1,22 @@
+#!/bin/sh
+# A stand-in for verdifax-verify, used only by the tests. It records the
+# arguments it was given and whether any VERDIFAX_ variable reached it, then
+# prints what the test asked for and exits with the code the test asked for.
+if [ "$1" = "--version" ]; then
+  echo "verdifax-verify v0.38.0 (test stand-in)"
+  exit 0
+fi
+if [ -n "$FAKE_VERIFY_ARGS_FILE" ]; then
+  : > "$FAKE_VERIFY_ARGS_FILE"
+  for a in "$@"; do printf '%s\n' "$a" >> "$FAKE_VERIFY_ARGS_FILE"; done
+  env | grep '^VERDIFAX_' | sed 's/=.*//' > "$FAKE_VERIFY_ARGS_FILE.env"
+fi
+if [ -n "$FAKE_VERIFY_STDOUT_FILE" ]; then
+  cat "$FAKE_VERIFY_STDOUT_FILE"
+else
+  printf '%s\n' '{"all_passed":true,"anchored":true,"verdict_tier":"COMPLETE_RECORD_ANCHORED"}'
+fi
+if [ -n "$FAKE_VERIFY_STDERR" ]; then
+  printf '%s\n' "$FAKE_VERIFY_STDERR" >&2
+fi
+exit "${FAKE_VERIFY_EXIT:-0}"

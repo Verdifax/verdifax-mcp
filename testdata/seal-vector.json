@@ -1,0 +1,104 @@
+{
+  "note": "Made by the Verdifax Python SDK's sign_request_v2 over the body seal_decision builds. Every implementation must build the same signed_request text and signature from these arguments.",
+  "request_key_hex": "000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f",
+  "signed_at": "2026-11-17T12:00:00Z",
+  "nonce": "00112233445566778899aabbccddeeff",
+  "cases": [
+    {
+      "arguments": {
+        "program_id": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "route_id": "claims/review",
+        "registry_record_hash": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+        "payload_text": "Approve claim 1042 for caf\u00e9 repairs.\nAmount: 300."
+      },
+      "client_info": {
+        "name": "vector-client",
+        "version": "1.2.3"
+      },
+      "signed_request": "{\"attested_context\":{\"attested\":true,\"client_name\":\"vector-client\",\"client_version\":\"1.2.3\"},\"payload_text\":\"Approve claim 1042 for caf\u00e9 repairs.\\nAmount: 300.\",\"program_id\":\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",\"registry_record_hash\":\"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb\",\"route_id\":\"claims/review\"}",
+      "request_signature": {
+        "version": "2",
+        "signature": "Vq5XPADAKsZCbcr/moPs3o4SfQrTJzO0ECwkbAHBwb1SqBW9O3cjkJgCs+5L0+wbvJhmuF6j5y0H8+wpWIZXDg==",
+        "signed_at": "2026-11-17T12:00:00Z",
+        "nonce": "00112233445566778899aabbccddeeff"
+      }
+    },
+    {
+      "arguments": {
+        "program_id": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+        "route_id": "loans/decide",
+        "registry_record_hash": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+        "payload_text": "Refer application 77 to a person.",
+        "ai_output_text": "The model suggests a referral.",
+        "attested_context": {
+          "actor_id": "agent-7",
+          "decision_kind": "advise",
+          "model_name": "example-model"
+        },
+        "policy_context": {
+          "actor_type": "agent",
+          "classification": "INTERNAL",
+          "data_use": {
+            "purpose": "credit-decision",
+            "basis": "contract",
+            "categories": [
+              "financial",
+              "identity"
+            ],
+            "reference": "hmac-sha256:eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"
+          }
+        },
+        "expected_policy_hash": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+      },
+      "client_info": {
+        "name": "Claude Code",
+        "version": "2.9.0"
+      },
+      "signed_request": "{\"ai_output_text\":\"The model suggests a referral.\",\"attested_context\":{\"actor_id\":\"agent-7\",\"attested\":true,\"client_name\":\"Claude Code\",\"client_version\":\"2.9.0\",\"decision_kind\":\"advise\",\"model_name\":\"example-model\"},\"expected_policy_hash\":\"ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff\",\"payload_text\":\"Refer application 77 to a person.\",\"policy_context\":{\"actor_type\":\"agent\",\"classification\":\"INTERNAL\",\"data_use\":{\"basis\":\"contract\",\"categories\":[\"financial\",\"identity\"],\"purpose\":\"credit-decision\",\"reference\":\"hmac-sha256:eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee\"}},\"program_id\":\"cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc\",\"registry_record_hash\":\"dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd\",\"route_id\":\"loans/decide\"}",
+      "request_signature": {
+        "version": "2",
+        "signature": "P42PQjinKpdCtSy5JJ8QahhHTWKV9AiH9tDBXEfsJcbMJGuXSplaraGjf1ePk09GQJbB39sKvw3DsJY1oS4aDA==",
+        "signed_at": "2026-11-17T12:00:00Z",
+        "nonce": "00112233445566778899aabbccddeeff"
+      }
+    },
+    {
+      "arguments": {
+        "program_id": "1111111111111111111111111111111111111111111111111111111111111111",
+        "route_id": "claims/review",
+        "registry_record_hash": "2222222222222222222222222222222222222222222222222222222222222222",
+        "payload_text": "Close claim 9 as paid.",
+        "attested_context": {
+          "actor_id": "person-3"
+        }
+      },
+      "client_info": {
+        "name": " Caf\u00e9\u200b Assistant\u0007 ",
+        "version": "1111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111 2222222222"
+      },
+      "signed_request": "{\"attested_context\":{\"actor_id\":\"person-3\",\"attested\":true,\"client_name\":\"Caf Assistant\",\"client_version\":\"1111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111\"},\"payload_text\":\"Close claim 9 as paid.\",\"program_id\":\"1111111111111111111111111111111111111111111111111111111111111111\",\"registry_record_hash\":\"2222222222222222222222222222222222222222222222222222222222222222\",\"route_id\":\"claims/review\"}",
+      "request_signature": {
+        "version": "2",
+        "signature": "eW4KNBrT9r8NNJOyKWg9DH3Qdj60NfrXc9M5Si4HFOEBqw9Uqfhm1sBsklET6GV0UN4nh8Z3uQEnkNnUIQ0rBg==",
+        "signed_at": "2026-11-17T12:00:00Z",
+        "nonce": "00112233445566778899aabbccddeeff"
+      }
+    },
+    {
+      "arguments": {
+        "program_id": "3333333333333333333333333333333333333333333333333333333333333333",
+        "route_id": "claims/review",
+        "registry_record_hash": "4444444444444444444444444444444444444444444444444444444444444444",
+        "payload_text": "Hold claim 12."
+      },
+      "client_info": {},
+      "signed_request": "{\"payload_text\":\"Hold claim 12.\",\"program_id\":\"3333333333333333333333333333333333333333333333333333333333333333\",\"registry_record_hash\":\"4444444444444444444444444444444444444444444444444444444444444444\",\"route_id\":\"claims/review\"}",
+      "request_signature": {
+        "version": "2",
+        "signature": "u7bADMXrvNGrX1H7/UmfA7xLZx9g51ikesfl4OMuv37wRNpYgOTCCglRUbLs4e8nufvf184D405MQbUWHqwJCw==",
+        "signed_at": "2026-11-17T12:00:00Z",
+        "nonce": "00112233445566778899aabbccddeeff"
+      }
+    }
+  ]
+}

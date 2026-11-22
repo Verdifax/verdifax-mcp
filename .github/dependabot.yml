@@ -1,0 +1,63 @@
+# Keeps the dependency surfaces current: each language's packages and the
+# pinned GitHub Actions SHAs, which Dependabot bumps with the matching
+# version comment kept in sync.
+#
+# Every ecosystem is checked monthly, and its minor and patch updates come
+# as one grouped pull request once each release is at least 14 days old.
+# Major versions are not proposed as version updates: they change behavior
+# and are migrated deliberately. These settings do not delay security
+# updates.
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: /typescript
+    schedule:
+      interval: monthly
+    cooldown:
+      default-days: 14
+    ignore:
+      - dependency-name: "*"
+        update-types: ["version-update:semver-major"]
+    groups:
+      npm:
+        patterns: ["*"]
+        update-types: [minor, patch]
+  - package-ecosystem: pip
+    directory: /python
+    schedule:
+      interval: monthly
+    cooldown:
+      default-days: 14
+    ignore:
+      - dependency-name: "*"
+        update-types: ["version-update:semver-major"]
+    groups:
+      pip:
+        patterns: ["*"]
+        update-types: [minor, patch]
+  - package-ecosystem: gomod
+    directory: /go
+    schedule:
+      interval: monthly
+    cooldown:
+      default-days: 14
+    ignore:
+      - dependency-name: "*"
+        update-types: ["version-update:semver-major"]
+    groups:
+      gomod:
+        patterns: ["*"]
+        update-types: [minor, patch]
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: monthly
+    cooldown:
+      default-days: 14
+    ignore:
+      - dependency-name: "*"
+        update-types: ["version-update:semver-major"]
+    groups:
+      actions:
+        patterns: ["*"]
+        update-types: [minor, patch]

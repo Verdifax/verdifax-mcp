@@ -1,0 +1,33 @@
+{
+  "note": "The command prepare_signoff must print for each set of arguments, in every implementation.",
+  "cases": [
+    {
+      "arguments": {
+        "kind": "record",
+        "run_id": 4601,
+        "digest": "1111111111111111111111111111111111111111111111111111111111111111",
+        "decision": "approve"
+      },
+      "command": "python3 -c 'import os, verdifax; key = bytes.fromhex(open(os.environ[\"VERDIFAX_APPROVER_KEY_FILE\"]).read().strip()); client = verdifax.VerdifaxClient(api_key=os.environ[\"VERDIFAX_API_KEY\"]); print(client.sign_off({\"kind\": \"record\", \"run_id\": 4601, \"digest\": \"1111111111111111111111111111111111111111111111111111111111111111\"}, \"approve\", key))'"
+    },
+    {
+      "arguments": {
+        "kind": "receipt",
+        "run_id": 12,
+        "digest": "2222222222222222222222222222222222222222222222222222222222222222",
+        "decision": "reject"
+      },
+      "command": "python3 -c 'import os, verdifax; key = bytes.fromhex(open(os.environ[\"VERDIFAX_APPROVER_KEY_FILE\"]).read().strip()); client = verdifax.VerdifaxClient(api_key=os.environ[\"VERDIFAX_API_KEY\"]); print(client.sign_off({\"kind\": \"receipt\", \"run_id\": 12, \"digest\": \"2222222222222222222222222222222222222222222222222222222222222222\"}, \"reject\", key))'"
+    },
+    {
+      "arguments": {
+        "kind": "job",
+        "run_id": 900,
+        "digest": "3333333333333333333333333333333333333333333333333333333333333333",
+        "job_id": "claims-2026.11:batch_7",
+        "decision": "approve"
+      },
+      "command": "python3 -c 'import os, verdifax; key = bytes.fromhex(open(os.environ[\"VERDIFAX_APPROVER_KEY_FILE\"]).read().strip()); client = verdifax.VerdifaxClient(api_key=os.environ[\"VERDIFAX_API_KEY\"]); print(client.sign_off({\"kind\": \"job\", \"run_id\": 900, \"digest\": \"3333333333333333333333333333333333333333333333333333333333333333\", \"job_id\": \"claims-2026.11:batch_7\"}, \"approve\", key))'"
+    }
+  ]
+}

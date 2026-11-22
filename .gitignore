@@ -1,0 +1,26 @@
+# Dependencies and build output, all reproducible from the lock files.
+node_modules/
+typescript/dist/
+go/verdifax-mcp
+__pycache__/
+*.py[cod]
+*.egg-info/
+build/
+dist/
+.venv/
+venv/
+.pytest_cache/
+
+# OS and editor noise
+.DS_Store
+.idea/
+.vscode/
+*.swp
+
+# Environment and secrets: keys are never committed.
+.env
+.env.*
+*.key
+
+# Internal audit scope files (foundation-audit); never published
+.audit-scope-*.json

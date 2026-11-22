@@ -1,0 +1,44 @@
+{
+  "name": "verdifax-mcp",
+  "version": "0.1.0",
+  "description": "The Verdifax MCP server: lets AI assistants read Verdifax records, check them with the local verifier, and seal decisions through the customer's policy.",
+  "license": "MIT",
+  "author": "Verdifax <team@verdifax.com>",
+  "homepage": "https://verdifax.com",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Verdifax/verdifax-mcp.git",
+    "directory": "typescript"
+  },
+  "type": "module",
+  "bin": {
+    "verdifax-mcp": "dist/main.js"
+  },
+  "files": [
+    "dist",
+    "mcp-tools.json",
+    "README.md",
+    "LICENSE"
+  ],
+  "engines": {
+    "node": ">=22.0.0"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "lint": "tsc -p tsconfig.json --noEmit",
+    "test": "npm run build && node --test --test-timeout=60000 --test-reporter=spec test/*.test.mjs"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "1.32.2",
+    "ajv": "8.20.0",
+    "verdifax": "1.17.0"
+  },
+  "devDependencies": {
+    "@types/node": "22.19.1",
+    "typescript": "5.9.3"
+  },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  }
+}

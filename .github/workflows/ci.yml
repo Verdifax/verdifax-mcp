@@ -1,0 +1,120 @@
+# Continuous integration for verdifax-mcp. Each language's server is built
+# and its tests run: the contract test (the served tools must equal
+# mcp-tools.json), the security tests (owner-key refusal, path traversal,
+# hostile record strings, secret leaks) and the tool tests, against a local
+# stand-in for the Verdifax API and a stand-in verifier. The parity job
+# then runs all three servers over stdio and fails unless they answer the
+# same. Nothing here reaches a Verdifax server or any paid service.
+
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_call:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  contract:
+    runs-on: ubuntu-latest
+    # A hung job fails here, not at GitHub's default limit.
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Every language ships the same contract
+        run: |
+          cmp mcp-tools.json typescript/mcp-tools.json
+          cmp mcp-tools.json python/verdifax_mcp/mcp-tools.json
+          cmp mcp-tools.json go/mcp-tools.json
+      - name: No em dash in any file
+        run: |
+          if grep -rIlP '\xE2\x80\x94' --exclude-dir=.git .; then
+            echo "an em dash was found in the files above"
+            exit 1
+          fi
+
+  typescript:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        node-version: ["22", "24", "26"]
+    defaults:
+      run:
+        working-directory: typescript
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: npm
+          cache-dependency-path: typescript/package-lock.json
+      - run: npm ci
+      - run: npm run lint
+      - run: npm test
+
+  python:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.11", "3.13"]
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with:
+          python-version: ${{ matrix.python-version }}
+      - run: pip install -e "./python[test]"
+      - run: python -m pytest -q python/tests
+
+  go:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: go
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+        with:
+          go-version: "1.27.4"
+          check-latest: true
+          cache-dependency-path: go/go.sum
+      - run: go vet ./...
+      - run: go test -count=1 ./...
+
+  parity:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    needs: [typescript, python, go]
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: "24"
+          cache: npm
+          cache-dependency-path: typescript/package-lock.json
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with:
+          python-version: "3.13"
+      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+        with:
+          go-version: "1.27.4"
+          check-latest: true
+          cache-dependency-path: go/go.sum
+      - run: npm ci && npm run build
+        working-directory: typescript
+      - run: pip install -e "./python[test]"
+      - run: go build -o verdifax-mcp ./cmd/verdifax-mcp
+        working-directory: go
+      - name: The three servers answer the same over stdio
+        run: python scripts/stdio-parity.py "node typescript/dist/main.js" "python -m verdifax_mcp" "go/verdifax-mcp"
+      - name: The verifier installer refuses bad input
+        run: sh scripts/test-install-verifier.sh

@@ -1,0 +1,106 @@
+name: Release
+
+# Builds the Go server, the binary R users and anyone without Node or
+# Python run, for Linux and macOS, and attaches each binary to the GitHub
+# release of the tag that triggered this workflow, with its SHA-256 checksum
+# and a Sigstore bundle. It publishes nothing to npm or PyPI.
+#
+# Trigger: pushing a tag matching v*, after the full CI (ci.yml) passes on
+# the tagged commit.
+#
+# Names:
+#   verdifax-mcp-darwin-amd64
+#   verdifax-mcp-darwin-arm64
+#   verdifax-mcp-linux-amd64
+#   verdifax-mcp-linux-arm64
+#
+# A user checks a download with:
+#
+#   cosign verify-blob \
+#     --bundle verdifax-mcp-linux-amd64.bundle \
+#     --certificate-identity-regexp '^https://github.com/Verdifax/verdifax-mcp/' \
+#     --certificate-oidc-issuer https://token.actions.githubusercontent.com \
+#     verdifax-mcp-linux-amd64
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    name: Test ${{ github.ref_name }}
+    uses: ./.github/workflows/ci.yml
+
+  create-release:
+    name: Create release for ${{ github.ref_name }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    needs: test
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: softprops/action-gh-release@efb35369e0ad2afab669f228072c1b0d510eae64 # v3.0.3
+        with:
+          tag_name: ${{ github.ref_name }}
+          name: ${{ github.ref_name }}
+          generate_release_notes: true
+
+  build:
+    name: Build ${{ matrix.goos }}/${{ matrix.goarch }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    needs: create-release
+    permissions:
+      contents: write
+      id-token: write
+    strategy:
+      matrix:
+        include:
+          - goos: darwin
+            goarch: amd64
+          - goos: darwin
+            goarch: arm64
+          - goos: linux
+            goarch: amd64
+          - goos: linux
+            goarch: arm64
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+        with:
+          go-version: "1.27.4"
+          check-latest: true
+          cache-dependency-path: go/go.sum
+      - name: Build verdifax-mcp
+        working-directory: go
+        env:
+          GOOS: ${{ matrix.goos }}
+          GOARCH: ${{ matrix.goarch }}
+          CGO_ENABLED: "0"
+        run: |
+          mkdir -p ../dist
+          go build -trimpath -ldflags "-s -w" -o ../dist/verdifax-mcp-${{ matrix.goos }}-${{ matrix.goarch }} ./cmd/verdifax-mcp
+      - name: Generate SHA-256 checksum
+        working-directory: dist
+        run: sha256sum verdifax-mcp-${{ matrix.goos }}-${{ matrix.goarch }} > verdifax-mcp-${{ matrix.goos }}-${{ matrix.goarch }}.sha256
+      - uses: sigstore/cosign-installer@6f9f17788090df1f26f669e9d70d6ae9567deba6 # v4.1.2
+      # Keyless signing: the signature is bound to this workflow's GitHub
+      # OIDC identity and recorded on the public Sigstore log. No private
+      # key exists to manage or leak.
+      - name: Sign binary (Cosign keyless, Sigstore bundle)
+        working-directory: dist
+        env:
+          COSIGN_YES: "true"
+        run: cosign sign-blob --bundle verdifax-mcp-${{ matrix.goos }}-${{ matrix.goarch }}.bundle verdifax-mcp-${{ matrix.goos }}-${{ matrix.goarch }}
+      - uses: softprops/action-gh-release@efb35369e0ad2afab669f228072c1b0d510eae64 # v3.0.3
+        with:
+          tag_name: ${{ github.ref_name }}
+          files: |
+            dist/verdifax-mcp-${{ matrix.goos }}-${{ matrix.goarch }}
+            dist/verdifax-mcp-${{ matrix.goos }}-${{ matrix.goarch }}.sha256
+            dist/verdifax-mcp-${{ matrix.goos }}-${{ matrix.goarch }}.bundle
