@@ -20,7 +20,7 @@ async def _run(argv: list[str]) -> None:
         print(USAGE)
         return
     config, grants = await prepare()
-    granted = "no tool list reported" if grants.api_key is None else "granted tools: " + (", ".join(grants.api_key) or "none")
+    granted = "no tool list reported" if grants.granted_tools is None else "granted tools: " + (", ".join(grants.granted_tools) or "none")
     print(f"verdifax-mcp: ready ({config.base_url}; {granted})", file=sys.stderr)
     server = create_server(config, grants)
     if parsed.http:

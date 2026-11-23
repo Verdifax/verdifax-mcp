@@ -64,7 +64,7 @@ async def prepare(env: Optional[Mapping[str, str]] = None) -> tuple[Config, Gran
     redactor = Redactor(secrets_of(config))
     grants = Grants()
     if config.api_key:
-        grants = Grants(api_key=await check_member_key(config.base_url, config.api_key, redactor))
+        grants = Grants(granted_tools=await check_member_key(config.base_url, config.api_key, redactor))
     if config.feed_key:
         await check_feed_key(config.base_url, config.feed_key, redactor)
     return config, grants

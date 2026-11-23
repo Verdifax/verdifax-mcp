@@ -52,8 +52,8 @@ export async function prepare(
 ): Promise<{ config: Config; grants: Grants }> {
   const config = loadConfig(env);
   const redactor = new Redactor(secretsOf(config));
-  let grants: Grants = { apiKey: null };
-  if (config.apiKey) grants = { apiKey: (await checkMemberKey(fetchImpl, config.baseURL, config.apiKey, redactor)).grants };
+  let grants: Grants = { grantedTools: null };
+  if (config.apiKey) grants = { grantedTools: (await checkMemberKey(fetchImpl, config.baseURL, config.apiKey, redactor)).grants };
   if (config.feedKey) await checkFeedKey(fetchImpl, config.baseURL, config.feedKey, redactor);
   return { config, grants };
 }

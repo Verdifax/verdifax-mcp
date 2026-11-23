@@ -68,8 +68,8 @@ func TestReportedGrantsLimitTheTools(t *testing.T) {
 	})
 	cfg, grants, err := Prepare(context.Background(), envOf(map[string]string{"VERDIFAX_BASE_URL": api.url, "VERDIFAX_API_KEY": memberKey, "VERDIFAX_FEED_KEY": feedKey}))
 	must(t, err)
-	if !reflect.DeepEqual(grants.APIKey, []string{"get_record", "list_records"}) {
-		t.Fatalf("grants %v", grants.APIKey)
+	if !reflect.DeepEqual(grants.GrantedTools, []string{"get_record", "list_records"}) {
+		t.Fatalf("grants %v", grants.GrantedTools)
 	}
 	session := connect(t, cfg, grants, "test-client", "1")
 	if !strings.Contains(session.InitializeResult().Instructions, "granted these tools: get_record, list_records.") {

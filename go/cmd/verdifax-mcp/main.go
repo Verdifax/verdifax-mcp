@@ -44,9 +44,9 @@ func run() error {
 		return prepareErr
 	}
 	granted := "no tool list reported"
-	if grants.APIKey != nil {
-		granted = "granted tools: " + strings.Join(grants.APIKey, ", ")
-		if len(grants.APIKey) == 0 {
+	if grants.GrantedTools != nil {
+		granted = "granted tools: " + strings.Join(grants.GrantedTools, ", ")
+		if len(grants.GrantedTools) == 0 {
 			granted = "granted tools: none"
 		}
 	}

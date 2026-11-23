@@ -72,7 +72,7 @@ func Prepare(ctx context.Context, env func(string) string) (*Config, Grants, err
 		if checkErr != nil {
 			return nil, Grants{}, checkErr
 		}
-		grants.APIKey = reported
+		grants.GrantedTools = reported
 	}
 	if cfg.FeedKey != "" {
 		if checkErr := CheckFeedKey(ctx, cfg.BaseURL, cfg.FeedKey, redactor); checkErr != nil {

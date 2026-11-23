@@ -20,7 +20,7 @@ async function main(): Promise<void> {
     return;
   }
   const { config, grants } = await prepare();
-  const grantsText = grants.apiKey === null ? "no tool list reported" : `granted tools: ${grants.apiKey.join(", ") || "none"}`;
+  const grantsText = grants.grantedTools === null ? "no tool list reported" : `granted tools: ${grants.grantedTools.join(", ") || "none"}`;
   process.stderr.write(`verdifax-mcp: ready (${config.baseURL}; ${grantsText})\n`);
   if (parsed.http) {
     await startHttp({

@@ -30,15 +30,15 @@ _LISTED = [types.Tool.model_validate(t) for t in TOOLS]
 class Grants:
     """The tools the server reported this member key may use, or None."""
 
-    api_key: Optional[list[str]] = field(default=None)
+    granted_tools: Optional[list[str]] = field(default=None)
 
 
 def instructions_for(grants: Grants) -> str:
     server = CONTRACT["server"]
-    if grants.api_key is None:
+    if grants.granted_tools is None:
         line = server["grants_line_none"]
     else:
-        line = server["grants_line_reported"].replace("{tools}", ", ".join(grants.api_key) if grants.api_key else "none")
+        line = server["grants_line_reported"].replace("{tools}", ", ".join(grants.granted_tools) if grants.granted_tools else "none")
     return f"{server['instructions']} {line}"
 
 
@@ -67,7 +67,7 @@ def create_server(config: Config, grants: Grants) -> Server:
         error = next(iter(_INPUT[name].iter_errors(args)), None)
         if error is not None:
             return failure(f"Refused: {_describe(error)}")
-        if IMPL["uses"][name] == "api_key" and grants.api_key is not None and name not in grants.api_key:
+        if IMPL["uses"][name] == "api_key" and grants.granted_tools is not None and name not in grants.granted_tools:
             return failure(f"Refused: the Verdifax server reports that this key's owner did not grant {name}")
 
         def client_info() -> Optional[dict[str, Any]]:

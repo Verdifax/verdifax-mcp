@@ -30,7 +30,7 @@ async function withVerifier(fn) {
   const verifier = fakeVerifier();
   process.env.FAKE_VERIFY_ARGS_FILE = verifier.argsFile;
   try {
-    const { client } = await connect({ config: config({ workdir: dir, verifierPath: verifier.path }), grants: { apiKey: null } });
+    const { client } = await connect({ config: config({ workdir: dir, verifierPath: verifier.path }), grants: { grantedTools: null } });
     await fn(client, dir, () => readFileSync(verifier.argsFile, "utf8").trim().split("\n"), verifier);
   } finally {
     delete process.env.FAKE_VERIFY_ARGS_FILE;
@@ -101,7 +101,7 @@ test("arguments outside the input schema are refused", async () => {
 });
 
 test("the verifier missing is a plain refusal", async () => {
-  const { client } = await connect({ config: config({ workdir: workdir(), verifierPath: "/nonexistent/verdifax-verify" }), grants: { apiKey: null } });
+  const { client } = await connect({ config: config({ workdir: workdir(), verifierPath: "/nonexistent/verdifax-verify" }), grants: { grantedTools: null } });
   const res = await client.callTool({ name: "verify_record", arguments: { path: "records/bundle.json" } });
   assert.equal(res.isError, true);
   assert.match(parseResult(res).error, /VERDIFAX_VERIFY_PATH/);
@@ -136,7 +136,7 @@ test("the read tools return the API's answers through the SDK", async () => {
     const dir = workdir();
     const { client } = await connect({
       config: config({ baseURL: api.baseURL, apiKey: MEMBER_KEY, feedKey: FEED_KEY, workdir: dir }),
-      grants: { apiKey: null },
+      grants: { grantedTools: null },
     });
     const call = async (name, args = {}) => {
       const res = await client.callTool({ name, arguments: args });
@@ -172,7 +172,7 @@ test("the read tools return the API's answers through the SDK", async () => {
 test("an API refusal comes back as a plain tool error", async () => {
   const api = await fakeAPI((e) => (e.path === "/runs/8/artifacts" ? { status: 404, body: { ok: false, error: "run not found" } } : keyCheck(e)));
   try {
-    const { client } = await connect({ config: config({ baseURL: api.baseURL, apiKey: MEMBER_KEY }), grants: { apiKey: null } });
+    const { client } = await connect({ config: config({ baseURL: api.baseURL, apiKey: MEMBER_KEY }), grants: { grantedTools: null } });
     const res = await client.callTool({ name: "get_record", arguments: { run_id: 8 } });
     assert.equal(res.isError, true);
     assert.match(parseResult(res).error, /404/);
@@ -192,7 +192,7 @@ test("seal_decision signs on this machine and seals the declared client, labelle
   });
   try {
     const { client } = await connect(
-      { config: config({ baseURL: api.baseURL, apiKey: MEMBER_KEY, requestKey: key }), grants: { apiKey: null } },
+      { config: config({ baseURL: api.baseURL, apiKey: MEMBER_KEY, requestKey: key }), grants: { grantedTools: null } },
       { name: "Claude Code", version: "2.9.0" },
     );
     const res = await client.callTool({ name: "seal_decision", arguments: { ...SEAL_ARGS, policy_context: { data_use: { purpose: "claims-review", categories: ["health"] } } } });
@@ -229,7 +229,7 @@ test("seal_decision without a request key sends the body unsigned; a refusal is 
     return keyCheck(e);
   });
   try {
-    const { client } = await connect({ config: config({ baseURL: api.baseURL, apiKey: MEMBER_KEY }), grants: { apiKey: null } });
+    const { client } = await connect({ config: config({ baseURL: api.baseURL, apiKey: MEMBER_KEY }), grants: { grantedTools: null } });
     const res = await client.callTool({ name: "seal_decision", arguments: SEAL_ARGS });
     assert.ok(!res.isError, JSON.stringify(res));
     assert.deepEqual([res.structuredContent.outcome, res.structuredContent.sealed, res.structuredContent.signed, res.structuredContent.signed_request], ["not_completed", true, false, null]);
@@ -247,7 +247,7 @@ test("seal_decision without a request key sends the body unsigned; a refusal is 
 });
 
 test("prepare_signoff makes no request and requires job_id only for a job", async () => {
-  const { client } = await connect({ config: config(), grants: { apiKey: null } });
+  const { client } = await connect({ config: config(), grants: { grantedTools: null } });
   const ok = await client.callTool({ name: "prepare_signoff", arguments: { kind: "record", run_id: 1, digest: "1".repeat(64), decision: "approve" } });
   assert.ok(!ok.isError);
   assert.equal(ok.structuredContent.steps.length, 4);
@@ -261,7 +261,7 @@ test("prepare_signoff makes no request and requires job_id only for a job", asyn
 
 test("HTTP mode serves the same tools on this machine and checks the bearer token", async () => {
   const token = "t".repeat(40);
-  const http = await startHttp({ host: "127.0.0.1", port: 0, token, newServer: () => createServer({ config: config(), grants: { apiKey: null } }) });
+  const http = await startHttp({ host: "127.0.0.1", port: 0, token, newServer: () => createServer({ config: config(), grants: { grantedTools: null } }) });
   const { port } = http.address();
   try {
     const url = new URL(`http://127.0.0.1:${port}/mcp`);
@@ -275,5 +275,5 @@ test("HTTP mode serves the same tools on this machine and checks the bearer toke
   } finally {
     await new Promise((r) => http.close(r));
   }
-  assert.throws(() => startHttp({ host: "0.0.0.0", port: 0, newServer: () => createServer({ config: config(), grants: { apiKey: null } }) }), StartupError);
+  assert.throws(() => startHttp({ host: "0.0.0.0", port: 0, newServer: () => createServer({ config: config(), grants: { grantedTools: null } }) }), StartupError);
 });

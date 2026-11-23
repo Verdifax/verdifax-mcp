@@ -19,7 +19,20 @@ from verdifax_mcp.startup import prepare
 
 HOSTILE = read_json(TESTDATA / "hostile-strings.json")["cases"]
 SEAL_ARGS = {"program_id": "a" * 64, "route_id": "r", "registry_record_hash": "b" * 64, "payload_text": "x"}
-HIDDEN = re.compile("[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f-\u009f\u200b-\u200f\u202a-\u202e\u2060-\u206f\ufeff\U000e0000-\U000e0fff]")
+# Characters a reader cannot see: control characters other than tab, line
+# feed and carriage return, zero-width and direction marks, word joiners, the
+# byte order mark and tag characters. The same set as hiddenChars in
+# go/security_test.go, written as code point ranges (CodeQL
+# py/overly-large-range reads a control-character range in a pattern as a
+# likely mistake).
+HIDDEN_RANGES = [
+    (0x00, 0x08), (0x0B, 0x0C), (0x0E, 0x1F), (0x7F, 0x9F), (0x200B, 0x200F),
+    (0x202A, 0x202E), (0x2060, 0x206F), (0xFEFF, 0xFEFF), (0xE0000, 0xE0FFF),
+]
+
+
+def hidden_chars(text: str) -> list[str]:
+    return [c for c in text if any(lo <= ord(c) <= hi for lo, hi in HIDDEN_RANGES)]
 
 
 @pytest.mark.anyio
@@ -47,7 +60,7 @@ async def test_owner_and_wrong_keys_in_either_slot_are_refused(fake_api) -> None
 async def test_reported_grants_limit_the_tools(fake_api) -> None:
     api = fake_api(lambda e: key_check(e, {"X-Verdifax-Allowed-Tools": "get_record, list_records, made_up_tool"}))
     config, grants = await prepare({"VERDIFAX_BASE_URL": api.base_url, "VERDIFAX_API_KEY": MEMBER_KEY, "VERDIFAX_FEED_KEY": FEED_KEY})
-    assert grants.api_key == ["get_record", "list_records"]
+    assert grants.granted_tools == ["get_record", "list_records"]
     async with connect(config, grants) as client:
         assert "granted these tools: get_record, list_records." in client.instructions
         refused = await client.call_tool("seal_decision", SEAL_ARGS)
@@ -131,7 +144,7 @@ async def test_hostile_record_strings_come_back_only_as_cleaned_quoted_fields(fa
     assert verified.structured_content["report"]["reason"] == HOSTILE[2]["cleaned"]
     assert verified.structured_content["stderr"].strip() == HOSTILE[0]["cleaned"]
     for content in (res.structured_content, verified.structured_content):
-        assert not HIDDEN.search(json.dumps(content, ensure_ascii=False))
+        assert not hidden_chars(json.dumps(content, ensure_ascii=False))
 
 
 @pytest.mark.anyio
@@ -181,4 +194,4 @@ async def test_no_secret_leaves_the_server(fake_api, workdir, verifier, monkeypa
 
 
 def test_grants_default_is_no_list() -> None:
-    assert Grants().api_key is None
+    assert Grants().granted_tools is None

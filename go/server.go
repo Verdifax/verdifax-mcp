@@ -19,16 +19,16 @@ import (
 // Grants are the tools the server reported the member key may use; nil
 // means the server reported no list.
 type Grants struct {
-	APIKey []string
+	GrantedTools []string
 }
 
 // InstructionsFor is the contract's instructions with the grants line.
 func InstructionsFor(grants Grants) string {
 	line := contract.Server.GrantsLineNone
-	if grants.APIKey != nil {
+	if grants.GrantedTools != nil {
 		names := "none"
-		if len(grants.APIKey) > 0 {
-			names = strings.Join(grants.APIKey, ", ")
+		if len(grants.GrantedTools) > 0 {
+			names = strings.Join(grants.GrantedTools, ", ")
 		}
 		line = strings.Replace(contract.Server.GrantsLineReported, "{tools}", names, 1)
 	}
@@ -106,7 +106,7 @@ func NewServer(cfg *Config, grants Grants) *mcp.Server {
 			if err := resolved[name].input.Validate(args); err != nil {
 				return failure("Refused: " + err.Error()), nil
 			}
-			if contract.Implementation.Uses[name] == "api_key" && grants.APIKey != nil && !contains(grants.APIKey, name) {
+			if contract.Implementation.Uses[name] == "api_key" && grants.GrantedTools != nil && !contains(grants.GrantedTools, name) {
 				return failure("Refused: the Verdifax server reports that this key's owner did not grant " + name), nil
 			}
 			info := runtimeInfo{cfg: cfg}

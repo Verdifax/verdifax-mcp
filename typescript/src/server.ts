@@ -38,7 +38,7 @@ for (const tool of contract.tools) {
 
 export interface Grants {
   /** The tools the server reported this member key may use, or null. */
-  apiKey: string[] | null;
+  grantedTools: string[] | null;
 }
 
 export interface ServerOptions {
@@ -49,9 +49,9 @@ export interface ServerOptions {
 
 export function instructionsFor(grants: Grants): string {
   const line =
-    grants.apiKey === null
+    grants.grantedTools === null
       ? contract.server.grants_line_none
-      : contract.server.grants_line_reported.replace("{tools}", grants.apiKey.length ? grants.apiKey.join(", ") : "none");
+      : contract.server.grants_line_reported.replace("{tools}", grants.grantedTools.length ? grants.grantedTools.join(", ") : "none");
   return `${contract.server.instructions} ${line}`;
 }
 
@@ -86,7 +86,7 @@ export function createServer(options: ServerOptions): Server {
     const check = inputCheck.get(name)!;
     if (!check(args)) return failure(`Refused: ${describe(check.errors)}`);
     const uses = contract.implementation.uses[name];
-    if (uses === "api_key" && options.grants.apiKey !== null && !options.grants.apiKey.includes(name)) {
+    if (uses === "api_key" && options.grants.grantedTools !== null && !options.grants.grantedTools.includes(name)) {
       return failure(`Refused: the Verdifax server reports that this key's owner did not grant ${name}`);
     }
     let answer: unknown;

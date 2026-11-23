@@ -19,7 +19,7 @@ test("the shipped contract is byte-identical to the repository's mcp-tools.json"
 
 test("tools/list serves exactly the contract's tools, in order", async () => {
   const root = readJSON(join(REPO, "mcp-tools.json"));
-  const { client } = await connect({ config: config(), grants: { apiKey: null } });
+  const { client } = await connect({ config: config(), grants: { grantedTools: null } });
   const listed = await client.listTools();
   assert.deepEqual(listed.tools, root.tools);
   assert.deepEqual(
@@ -46,7 +46,7 @@ test("no tool takes a secret as input", () => {
 });
 
 test("initialize names the contract's server and instructions", async () => {
-  const { client } = await connect({ config: config(), grants: { apiKey: null } });
+  const { client } = await connect({ config: config(), grants: { grantedTools: null } });
   assert.equal(client.getServerVersion().name, contract.server.name);
   assert.equal(client.getServerVersion().version, contract.server.version);
   assert.ok(client.getInstructions().startsWith(contract.server.instructions));

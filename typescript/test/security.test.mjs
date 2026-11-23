@@ -56,7 +56,7 @@ test("a member key and a feed key start, and the reported grants limit the tools
   const api = await fakeAPI((e) => keyCheck(e, { "X-Verdifax-Allowed-Tools": "get_record, list_records, made_up_tool" }));
   try {
     const ready = await prepare({ VERDIFAX_BASE_URL: api.baseURL, VERDIFAX_API_KEY: MEMBER_KEY, VERDIFAX_FEED_KEY: FEED_KEY });
-    assert.deepEqual(ready.grants.apiKey, ["get_record", "list_records"]);
+    assert.deepEqual(ready.grants.grantedTools, ["get_record", "list_records"]);
     const { client } = await connect(ready);
     assert.match(client.getInstructions(), /granted these tools: get_record, list_records\./);
     const refused = await client.callTool({
@@ -109,7 +109,7 @@ test("paths that leave the working folder are refused before the verifier runs",
   const verifier = fakeVerifier();
   process.env.FAKE_VERIFY_ARGS_FILE = verifier.argsFile;
   try {
-    const { client } = await connect({ config: config({ workdir: dir, verifierPath: verifier.path }), grants: { apiKey: null } });
+    const { client } = await connect({ config: config({ workdir: dir, verifierPath: verifier.path }), grants: { grantedTools: null } });
     const attempts = [
       { path: "../outside.json" },
       { path: "records/../../etc/passwd" },
@@ -150,7 +150,7 @@ test("hostile record strings come back only as cleaned, quoted fields", async ()
   try {
     const { client } = await connect({
       config: config({ baseURL: api.baseURL, apiKey: MEMBER_KEY, workdir: dir, verifierPath: verifier.path }),
-      grants: { apiKey: null },
+      grants: { grantedTools: null },
     });
     const res = await client.callTool({ name: "get_record", arguments: { run_id: 7 } });
     assert.ok(!res.isError);
@@ -176,7 +176,7 @@ test("hostile record strings come back only as cleaned, quoted fields", async ()
 test("seal_decision refuses hidden characters and sends nothing", async () => {
   const api = await fakeAPI((e) => keyCheck(e));
   try {
-    const { client } = await connect({ config: config({ baseURL: api.baseURL, apiKey: MEMBER_KEY }), grants: { apiKey: null } });
+    const { client } = await connect({ config: config({ baseURL: api.baseURL, apiKey: MEMBER_KEY }), grants: { grantedTools: null } });
     const res = await client.callTool({
       name: "seal_decision",
       arguments: { program_id: "a".repeat(64), route_id: "r", registry_record_hash: "b".repeat(64), payload_text: "approve\u200b" },
@@ -207,7 +207,7 @@ test("no secret leaves the server: not in answers, errors, verifier output or th
   process.env.VERDIFAX_FEED_KEY = FEED_KEY;
   try {
     const cfg = config({ baseURL: api.baseURL, apiKey: MEMBER_KEY, feedKey: FEED_KEY, requestKey, workdir: dir, verifierPath: verifier.path });
-    const { client } = await connect({ config: cfg, grants: { apiKey: null } });
+    const { client } = await connect({ config: cfg, grants: { grantedTools: null } });
     const results = [
       await client.callTool({ name: "get_record", arguments: { run_id: 1 } }),
       await client.callTool({ name: "list_records", arguments: {} }),
